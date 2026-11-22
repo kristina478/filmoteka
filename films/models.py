@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Avg
+from django.core.cache import cache
 
 class Genre(models.Model):
     name = models.CharField(max_length=100)
@@ -64,9 +65,24 @@ class Film(models.Model):
     )
 
     def average_rating(self):
-        return self.reviews.aggregate(
-            Avg('rating')
-        )['rating__avg']
+
+        cache_key = f'film_rating_{self.id}'
+
+        rating = cache.get(cache_key)
+
+        if rating is None:
+
+            rating = self.reviews.aggregate(
+                Avg("rating")
+            )["rating__avg"]
+
+            cache.set(
+                cache_key,
+                rating,
+                300
+            )
+
+        return rating
 
     def __str__(self):
         return self.title

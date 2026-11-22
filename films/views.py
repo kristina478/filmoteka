@@ -10,6 +10,7 @@ from django.views.generic import (
 from .models import Film, Review
 from .forms import FilmForm, ReviewForm
 from django.shortcuts import get_object_or_404, redirect
+from django.db.models import Prefetch
 
 class FilmListView(ListView):
     model = Film
@@ -18,7 +19,12 @@ class FilmListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        queryset = Film.objects.all()
+        queryset = Film.objects.select_related(
+            'genre',
+            'author'
+        ).prefetch_related(
+            'actors'
+)
 
         search = self.request.GET.get('search')
         genre = self.request.GET.get('genre')
@@ -52,6 +58,14 @@ class FilmListView(ListView):
 
 class FilmDetailView(DetailView):
     model = Film
+
+    queryset = Film.objects.select_related(
+        'genre',
+        'author'
+    ).prefetch_related(
+        'actors',
+        'reviews'
+    )
     template_name = 'films/film_detail.html'
 
     def get_context_data(self, **kwargs):
