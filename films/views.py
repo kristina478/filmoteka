@@ -7,9 +7,9 @@ from django.views.generic import (
     DeleteView
 )
 
-from .models import Film
-from .forms import FilmForm
-
+from .models import Film, Review
+from .forms import FilmForm, ReviewForm
+from django.shortcuts import get_object_or_404, redirect
 
 class FilmListView(ListView):
     model = Film
@@ -54,6 +54,24 @@ class FilmDetailView(DetailView):
     model = Film
     template_name = 'films/film_detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        film = self.object
+
+        context['reviews'] = film.reviews.all()
+
+        context['review_form'] = ReviewForm()
+
+        related_films = Film.objects.filter(
+            actors__in=film.actors.all()
+        ).exclude(
+            pk=film.pk
+        ).distinct()
+
+        context['related_films'] = related_films
+
+        return context
 
 class FilmCreateView(CreateView):
     model = Film
@@ -81,3 +99,32 @@ class FilmDeleteView(DeleteView):
     model = Film
     template_name = 'films/film_confirm_delete.html'
     success_url = reverse_lazy('film_list')
+
+def add_review(request, pk):
+
+    film = get_object_or_404(
+        Film,
+        pk=pk
+    )
+
+    if request.method == 'POST':
+
+        form = ReviewForm(
+            request.POST
+        )
+
+        if form.is_valid():
+
+            review = form.save(
+                commit=False
+            )
+
+            review.film = film
+            review.user = request.user
+
+            review.save()
+
+    return redirect(
+        'film_detail',
+        pk=pk
+    )    

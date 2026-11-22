@@ -1,4 +1,5 @@
 from django.urls import path
+from .views import add_review
 
 from .views import (
     FilmListView,
@@ -33,5 +34,11 @@ urlpatterns = [
         'film/<int:pk>/delete/',
         FilmDeleteView.as_view(),
         name='film_delete'
+    ),
+
+    path(
+    'film/<int:pk>/review/',
+    add_review,
+    name='add_review'
     ),
 ]
