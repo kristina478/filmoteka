@@ -17,6 +17,38 @@ class FilmListView(ListView):
     context_object_name = 'films'
     paginate_by = 10
 
+    def get_queryset(self):
+        queryset = Film.objects.all()
+
+        search = self.request.GET.get('search')
+        genre = self.request.GET.get('genre')
+        status = self.request.GET.get('status')
+
+        if search:
+            queryset = queryset.filter(
+                title__icontains=search
+            )
+
+        if genre:
+            queryset = queryset.filter(
+                genre_id=genre
+            )
+
+        if status:
+            queryset = queryset.filter(
+                status=status
+            )
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        from .models import Genre
+
+        context['genres'] = Genre.objects.all()
+
+        return context
 
 class FilmDetailView(DetailView):
     model = Film

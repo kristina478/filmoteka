@@ -6,16 +6,98 @@
 
 <hr>
 
+<form method="get">
+
+    <input
+        type="text"
+        name="search"
+        placeholder="Поиск по названию"
+        value="{{ request.GET.search }}"
+    >
+
+    <select name="genre">
+        <option value="">
+            Все жанры
+        </option>
+
+        {% for genre in genres %}
+            <option
+                value="{{ genre.id }}"
+            >
+                {{ genre.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <select name="status">
+
+        <option value="">
+            Все статусы
+        </option>
+
+        <option value="published">
+            Published
+        </option>
+
+        <option value="draft">
+            Draft
+        </option>
+
+    </select>
+
+    <button type="submit">
+        Найти
+    </button>
+
+</form>
+
+<hr>
+
 {% for film in films %}
-    <h3>
-        <a href="{% url 'film_detail' film.pk %}">
-            {{ film.title }}
-        </a>
-    </h3>
 
-    <p>{{ film.genre }}</p>
+<h3>
+    <a href="{% url 'film_detail' film.pk %}">
+        {{ film.title }}
+    </a>
+</h3>
 
-    <hr>
+<p>
+    {{ film.genre }}
+</p>
+
+<hr>
+
 {% empty %}
-    <p>Фильмов пока нет</p>
+
+<p>
+    Ничего не найдено
+</p>
+
 {% endfor %}
+
+<div>
+
+{% if page_obj.has_previous %}
+    <a href="?page=1">
+        Первая
+    </a>
+
+    <a href="?page={{ page_obj.previous_page_number }}">
+        Назад
+    </a>
+{% endif %}
+
+Страница {{ page_obj.number }}
+из {{ page_obj.paginator.num_pages }}
+
+{% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}">
+        Вперёд
+    </a>
+
+    <a href="?page={{ page_obj.paginator.num_pages }}">
+        Последняя
+    </a>
+{% endif %}
+
+</div>
